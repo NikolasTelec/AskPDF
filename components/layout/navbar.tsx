@@ -4,7 +4,7 @@ import { ArrowRightEndOnRectangleIcon, DocumentPlusIcon, DocumentTextIcon, Bars3
 import Image from "next/image";
 import { useState } from "react";
 
-const navbar = () => {
+const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState<boolean>(false)
 
@@ -91,4 +91,4 @@ const navbar = () => {
   )
 }
 
-export default navbar
+export default Navbar
