@@ -3,6 +3,8 @@
 import { triggerFileUpload } from "@/components/PdfUpload";
 import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 const page = () => {
 
@@ -20,10 +22,22 @@ const page = () => {
     const handleDelete = (e: React.MouseEvent, docId: number) => {
         e.preventDefault();
         e.stopPropagation(); // Prevents user to miss click
-        
+
         console.log("Mažu dokument s ID:", docId);
         // Will add database logic soon
     };
+
+    // Google sign up toast
+    useEffect(() => {
+        // Checks if user is comming back from google sign in
+        const isGoogleLogin = localStorage.getItem("google_login_pending");
+
+        if (isGoogleLogin === "true") {
+            toast.success("Successfully signed in with Google!");
+            console.log("test");
+            localStorage.removeItem("google_login_pending");
+        }
+    }, []);
 
     return (
         <>
@@ -49,7 +63,7 @@ const page = () => {
                         {documents.map((doc) => (
 
                             <div key={doc.id} className="relative group aspect-3/4 w-full">
-                                
+
                                 <Link
                                     href={`/documents/${doc.id}`}
                                     className="block w-full h-full bg-[#F1F0FF] rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer"
@@ -66,7 +80,7 @@ const page = () => {
                                 >
                                     <TrashIcon className="h-5 w-5" />
                                 </button>
-                                
+
                             </div>
                         ))}
 

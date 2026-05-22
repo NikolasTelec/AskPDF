@@ -3,6 +3,7 @@
 import { useState, type SubmitEvent } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface SignInProps {
     onAuthError: (message: string) => void;
@@ -34,6 +35,7 @@ export const SignIn = ({ onAuthError }: SignInProps) => {
             }
 
             if (data?.user) {
+                toast.success("Sign in successfull!");
                 router.push('/documents');
             }
 

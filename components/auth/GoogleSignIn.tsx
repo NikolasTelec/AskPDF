@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/utils/supabase/client";
+import { toast } from "sonner";
 
 interface GoogleSignInProps {
     onAuthError: (message: string) => void;
@@ -15,6 +16,8 @@ export const GoogleSignIn = ({ onAuthError }: GoogleSignInProps) => {
     const handleGoogleSignIn = async () => {
         setIsGoogleLoading(true);
         try {
+            localStorage.setItem("google_login_pending", "true");
+            
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
@@ -23,10 +26,13 @@ export const GoogleSignIn = ({ onAuthError }: GoogleSignInProps) => {
             });
 
             if (error) {
+                localStorage.removeItem("google_login_pending");
+                toast.error(error.message);
                 onAuthError(error.message);
             }
         } catch (error) {
             console.error(error);
+            localStorage.removeItem("google_login_pending");
             onAuthError("Google login failed. Please try again.");
         } finally {
             setIsGoogleLoading(false);
