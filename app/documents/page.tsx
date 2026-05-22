@@ -1,7 +1,8 @@
 "use client"
 
 import { triggerFileUpload } from "@/components/PdfUpload";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 const page = () => {
 
@@ -14,6 +15,15 @@ const page = () => {
         { id: 5, title: "" },
         { id: 6, title: "" },
     ];
+
+    // Delete document function
+    const handleDelete = (e: React.MouseEvent, docId: number) => {
+        e.preventDefault();
+        e.stopPropagation(); // Prevents user to miss click
+        
+        console.log("Mažu dokument s ID:", docId);
+        // Will add database logic soon
+    };
 
     return (
         <>
@@ -37,11 +47,26 @@ const page = () => {
 
                         {/* Documents */}
                         {documents.map((doc) => (
-                            <div
-                                key={doc.id}
-                                className="aspect-3/4 w-full bg-[#F1F0FF] rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer"
-                            >
-                                {/* Will add PDF thumbnail soon */}
+
+                            <div key={doc.id} className="relative group aspect-3/4 w-full">
+                                
+                                <Link
+                                    href={`/documents/${doc.id}`}
+                                    className="block w-full h-full bg-[#F1F0FF] rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer"
+                                >
+                                    {/* Will add PDF thumbnail soon */}
+                                </Link>
+
+                                {/* Delete button (permanently shows only in mobile view) */}
+                                <button
+                                    type="button"
+                                    onClick={(e) => handleDelete(e, doc.id)}
+                                    className="absolute bottom-3 right-3 p-2 bg-white text-slate-500 hover:text-red-500 rounded-lg shadow-sm hover:shadow border border-slate-100 transition cursor-pointer md:opacity-0 group-hover:opacity-100"
+                                    title="Delete document"
+                                >
+                                    <TrashIcon className="h-5 w-5" />
+                                </button>
+                                
                             </div>
                         ))}
 
