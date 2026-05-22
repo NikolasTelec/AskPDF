@@ -1,27 +1,13 @@
 "use client"
 
 import Link from 'next/link'
-import Image from "next/image";
-import { useState, type SubmitEvent } from 'react';
+import { useState } from 'react';
+import { InformationCircleIcon } from '@heroicons/react/24/outline';
+import { GoogleSignIn } from '@/components/auth/GoogleSignIn';
+import { SignUp } from '@/components/auth/SignUp';
 
 const page = () => {
-
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-
-    const handleSignUp = async (e: SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        setIsLoading(true);
-
-        try {
-            // Loading logic will be added soon
-            await new Promise((resolve) => setTimeout(resolve, 5000)); // Simulation of loading for 5s
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     return (
         <div className="min-h-screen w-full bg-white md:bg-slate-50 flex flex-col items-center justify-center px-0 md:px-4">
@@ -32,58 +18,16 @@ const page = () => {
                     Sign up to <span className="text-[#4F46E5]">AskPDF</span>
                 </h1>
 
-                {/* Form */}
-                <form className="space-y-5" onSubmit={handleSignUp}>
-
-                    {/* Email input */}
-                    <div className="space-y-1.5">
-                        <label htmlFor="email" className="text-xs font-medium text-slate-700 block">
-                            Email address
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            autoComplete="email"
-                            required
-                            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition"
-                        />
+                {/* Error message */}
+                {errorMessage && (
+                    <div className="mb-5 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg flex items-center gap-2">
+                        <InformationCircleIcon className='h-5 w-5' />
+                        {errorMessage}
                     </div>
+                )}
 
-                    {/* Password input */}
-                    <div className="space-y-1.5">
-                        <label htmlFor="password" className="text-xs font-medium text-slate-700 block">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            autoComplete="current-password"
-                            required
-                            className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-[#4F46E5] focus:ring-1 focus:ring-[#4F46E5] transition"
-                        />
-                    </div>
-
-                    {/* Sign up button */}
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="flex align-center justify-center w-full min-h-10 bg-[#4F46E5] hover:bg-[#6159ED] text-white font-semibold text-base py-2 px-4 rounded-lg shadow-sm cursor-pointer transition mt-2 text-center disabled:bg-[#818CF8] disabled:cursor-not-allowed"
-                    >
-                        {isLoading ? (
-                            <>
-                                {/* Spinning SVG (Tailwind animate-spin) */}
-                                <svg className="mt-0.5 animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                </svg>
-                            </>
-                        ) : (
-                            "Sign up"
-                        )}
-                    </button>
-                </form>
+                {/* Sign up */}
+                <SignUp onAuthError={(msg) => setErrorMessage(msg)} />
 
                 {/* "Or continue with" */}
                 <div className="relative my-6">
@@ -97,15 +41,8 @@ const page = () => {
                     </div>
                 </div>
 
-                {/* Google button */}
-                <button
-                    type="button"
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-300 rounded-lg bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 cursor-pointer shadow-sm transition"
-                >
-                    <Image src="/google_icon.png" alt="crown" className="w-4 h-4 ml-1" width={16} height={16} />
-                    Google
-                </button>
+                {/* Google signup */}
+                <GoogleSignIn onAuthError={(msg) => setErrorMessage(msg)} />
 
             </div>
 
