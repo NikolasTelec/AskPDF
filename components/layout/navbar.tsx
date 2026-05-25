@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { triggerFileUpload } from "../PdfUpload";
+import { handleLogout } from "../auth/Logout";
 
 const Navbar = () => {
 
@@ -57,9 +58,10 @@ const Navbar = () => {
 
         {/* Logout Button */}
         <button
-          type="button"
-          className="hidden md:flex items-center justify-center px-2 -mx-2 rounded-md cursor-pointer hover:bg-violet-50"
-        ><ArrowRightEndOnRectangleIcon className="w-7 h-7 text-[#4F46E5]" />
+            onClick={handleLogout}
+            className="hidden md:flex items-center justify-center px-2 -mx-2 rounded-md cursor-pointer hover:bg-violet-50"
+        >
+            <ArrowRightEndOnRectangleIcon className="w-7 h-7 text-[#4F46E5]" />
         </button>
       </div>
 
@@ -82,7 +84,7 @@ const Navbar = () => {
 
       {/* Menu */}
       {menuOpen && (
-        <div className="md:hidden fixed top-18 left-0 w-full h-[calc(100vh-4.5rem)] bg-white flex flex-col gap-8 p-6">
+        <div className="md:hidden fixed top-18 left-0 z-50 w-full h-[calc(100vh-4.5rem)] bg-white flex flex-col gap-8 p-6">
           <Link
             href="/documents"
             onClick={() => setMenuOpen(false)}
@@ -103,7 +105,7 @@ const Navbar = () => {
             className="flex items-center gap-2 text-[#4F46E5] font-semibold text-left">
             Upgrade <Image src="/crown.png" alt="crown" className="w-6 h-6 ml-1" width={16} height={16} />
           </Link>
-          <button className="flex items-center gap-2 text-[#4F46E5] font-semibold text-left">
+          <button onClick={handleLogout} className="flex items-center gap-2 text-[#4F46E5] font-semibold text-left">
             Logout <ArrowRightEndOnRectangleIcon className="w-6 h-6 ml-1 text-[#4F46E5]" />
           </button>
         </div>

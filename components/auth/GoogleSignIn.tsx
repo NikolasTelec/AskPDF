@@ -21,7 +21,7 @@ export const GoogleSignIn = ({ onAuthError }: GoogleSignInProps) => {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/documents`,
+                    redirectTo: `${window.location.origin}/auth/callback`,
                 },
             });
 
