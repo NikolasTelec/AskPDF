@@ -1,30 +1,95 @@
 "use client"
 
 import { triggerFileUpload } from "@/components/PdfUpload";
-import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon, DocumentIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { createClient } from "@/utils/supabase/client";
+
+// Function for pdf name formating
+const getFileNameFromUrl = (url: string) => {
+    if (!url) return "Document";
+    const parts = url.split("/");
+    const lastPart = parts[parts.length - 1];
+    const nameWithoutTimestamp = lastPart.replace(/^\d+_+/, "");
+    return decodeURIComponent(nameWithoutExtension(nameWithoutTimestamp)).replace(/_/g, " ");
+};
+const nameWithoutExtension = (filename: string) => {
+    return filename.substring(0, filename.lastIndexOf(".")) || filename;
+};
 
 const page = () => {
+    const [documents, setDocuments] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const supabase = createClient();
 
-    // Simulation of added documents
-    const documents = [
-        { id: 1, title: "" },
-        { id: 2, title: "" },
-        { id: 3, title: "" },
-        { id: 4, title: "" },
-        { id: 5, title: "" },
-        { id: 6, title: "" },
-    ];
+    // Getting documents from db
+    useEffect(() => {
+        const fetchDocuments = async () => {
+            try {
+                setIsLoading(true);
 
-    // Delete document function
-    const handleDelete = (e: React.MouseEvent, docId: number) => {
+                // Sort from newest
+                const { data, error } = await supabase
+                    .from("documents")
+                    .select("*")
+                    .order("created_at", { ascending: false });
+
+                if (error) throw error;
+
+                setDocuments(data || []);
+            } catch (error: any) {
+                console.error("Error while loading documents:", error.message);
+                toast.error("Failed to load documents!");
+            } finally {
+                setIsLoading(false)
+            }
+        };
+
+        fetchDocuments();
+    }, []);
+
+    // 1. Zachycení kliknutí a vyvolání potvrzovacího toastu
+    const handleDelete = (e: React.MouseEvent, docId: string) => {
         e.preventDefault();
-        e.stopPropagation(); // Prevents user to miss click
+        e.stopPropagation();
 
-        console.log("Mažu dokument s ID:", docId);
-        // Will add database logic soon
+        toast.warning("Are you sure you want to delete this document?", {
+            duration: 5000, // Necháme toast svítit 5 sekund, aby měl uživatel čas kliknout
+            action: {
+                label: "Delete",
+                onClick: () => executeDelete(docId), // Při kliknutí spustíme mazání
+            },
+            actionButtonStyle: {
+                backgroundColor: "#ef4444", // Krásná Tailwind red-500
+                color: "#ffffff",
+                borderRadius: "0.5rem",    // rounded-lg (8px)
+                fontSize: "12px",
+                fontWeight: "600",
+                padding: "6px 12px",
+                transition: "background-color 0.2s",
+            },
+        });
+    };
+
+    // 2. Skutečné smazání z databáze (spustí se až po potvrzení)
+    const executeDelete = async (docId: string) => {
+        const toastId = toast.loading("Deleting document...");
+        try {
+            const { error } = await supabase
+                .from("documents")
+                .delete()
+                .eq("id", docId);
+
+            if (error) throw error;
+
+            setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
+            toast.success("Document deleted!", { id: toastId });
+        } catch (error: any) {
+            console.error(error.message);
+            toast.error("Failed to delete document!", { id: toastId });
+        }
     };
 
     // Google sign up toast
@@ -59,28 +124,40 @@ const page = () => {
                             </span>
                         </button>
 
+                        {/* Loading */}
+                        {isLoading && (
+                            [...Array(4)].map((_, i) => (
+                                <div key={i} className="aspect-3/4 w-full bg-slate-50 animate-pulse rounded-xl" />
+                            ))
+                        )}
+
                         {/* Documents */}
-                        {documents.map((doc) => (
-
+                        {!isLoading && documents.map((doc) => (
                             <div key={doc.id} className="relative group aspect-3/4 w-full">
-
                                 <Link
                                     href={`/documents/${doc.id}`}
-                                    className="block w-full h-full bg-[#F1F0FF] rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer"
+                                    className="flex flex-col justify-between p-4 w-full h-full bg-[#F1F0FF] rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition cursor-pointer"
                                 >
-                                    {/* Will add PDF thumbnail soon */}
+                                    {/* Icon */}
+                                    <div className="flex-1 flex items-center justify-center">
+                                        <DocumentIcon className="h-12 w-12 text-slate-500 group-hover:text-[#4F46E5] opacity-80" />
+                                    </div>
+
+                                    {/* File name */}
+                                    <p className="text-xs font-medium text-slate-500 text-center truncate mx-3">
+                                        {getFileNameFromUrl(doc.file_url)}
+                                    </p>
                                 </Link>
 
-                                {/* Delete button (permanently shows only in mobile view) */}
+                                {/* Delete button */}
                                 <button
                                     type="button"
                                     onClick={(e) => handleDelete(e, doc.id)}
-                                    className="absolute bottom-3 right-3 p-2 bg-white text-slate-500 hover:text-red-500 rounded-lg shadow-sm hover:shadow border border-slate-100 transition cursor-pointer md:opacity-0 group-hover:opacity-100"
+                                    className="absolute top-3 right-3 p-2 bg-white text-slate-500 hover:text-red-500 rounded-lg shadow-sm hover:shadow border border-slate-100 transition cursor-pointer md:opacity-0 group-hover:opacity-100"
                                     title="Delete document"
                                 >
                                     <TrashIcon className="h-5 w-5" />
                                 </button>
-
                             </div>
                         ))}
 

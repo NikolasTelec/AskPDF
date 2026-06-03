@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export const triggerFileUpload = () => {
     window.dispatchEvent(new Event("open-pdf-upload"));
@@ -13,6 +15,7 @@ const PdfUpload = () => {
     const [isUploading, setIsUploading] = useState(false);
 
     const supabase = createClient();
+    const router = useRouter();
 
     useEffect(() => {
         const handleTrigger = () => {
@@ -30,8 +33,11 @@ const PdfUpload = () => {
         const file = e.target.files?.[0]; // Takes first selected file
         if (!file) return;
 
+        let toastId: string | number | undefined;
+
         try {
             setIsUploading(true);
+            toastId = toast.loading("Uploading your document...");
 
             // 1. Getting user
             const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -80,12 +86,14 @@ const PdfUpload = () => {
                 throw new Error(`Database error: ${dbError.message}`);
             }
 
-            console.log("Added successfully to DB. Document ID:", dbData.id);
-
-            // Will add redirect to chat
+            toast.success("Document uploaded successfully!", { id: toastId });
+            router.push(`/documents/${dbData.id}`);
 
         } catch (error: any) {
             console.error("Upload failed:", error.message);
+            if (toastId) {
+                toast.error("Upload failed. Please try again.", { id: toastId });
+            }
         } finally {
             setIsUploading(false);
             // Input reset
