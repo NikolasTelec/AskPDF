@@ -50,21 +50,21 @@ const page = () => {
         fetchDocuments();
     }, []);
 
-    // 1. Zachycení kliknutí a vyvolání potvrzovacího toastu
+    // Catch delete from toast
     const handleDelete = (e: React.MouseEvent, docId: string) => {
         e.preventDefault();
         e.stopPropagation();
 
         toast.warning("Are you sure you want to delete this document?", {
-            duration: 5000, // Necháme toast svítit 5 sekund, aby měl uživatel čas kliknout
+            duration: 5000,
             action: {
                 label: "Delete",
-                onClick: () => executeDelete(docId), // Při kliknutí spustíme mazání
+                onClick: () => executeDelete(docId),
             },
             actionButtonStyle: {
-                backgroundColor: "#ef4444", // Krásná Tailwind red-500
+                backgroundColor: "#ef4444",
                 color: "#ffffff",
-                borderRadius: "0.5rem",    // rounded-lg (8px)
+                borderRadius: "0.5rem",
                 fontSize: "12px",
                 fontWeight: "600",
                 padding: "6px 12px",
@@ -73,7 +73,7 @@ const page = () => {
         });
     };
 
-    // 2. Skutečné smazání z databáze (spustí se až po potvrzení)
+    // Real delete from db
     const executeDelete = async (docId: string) => {
         const toastId = toast.loading("Deleting document...");
         try {
