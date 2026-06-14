@@ -30,35 +30,24 @@ export async function proxy(request: NextRequest) {
     )
 
     try {
-        // Getting user
-        const { data: { user }, error } = await supabase.auth.getUser()
-
-        if (error) {
-            console.log("❌ [PROXY] Supabase error:", error.message);
-        }
-
-        // If user is NOT logged in and is trying to access documents redirect him to /signin
+        const { data: { user } } = await supabase.auth.getUser()
+    
         if (!user && request.nextUrl.pathname.startsWith('/documents')) {
             return NextResponse.redirect(new URL('/signin', request.url))
         }
-
-        // If user is logged in and is trying to access signin/signup redirect him to /documents
+    
         if (user && (request.nextUrl.pathname.startsWith('/signin') || request.nextUrl.pathname.startsWith('/signup'))) {
             return NextResponse.redirect(new URL('/documents', request.url))
         }
-
-        // Just checking that everything is working 
-        if (user) {
-            console.log(`✅ [PROXY] User signed up! Email: ${user.email}`);
-        } else {
-            console.log("🔒 [PROXY] User = null");
+    
+        if (user && request.nextUrl.pathname === '/') {
+            return NextResponse.redirect(new URL('/documents', request.url))
         }
-
+    
     } catch (e) {
-        console.error("💥 [PROXY] Crash when authenticating user", e);
+        console.error("Auth middleware error:", e)
     }
-
-    console.log("--------------------------------------------------");
+    
     return response
 }
 
