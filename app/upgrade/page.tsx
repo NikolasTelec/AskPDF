@@ -1,5 +1,6 @@
 
 import { CheckIcon } from "@heroicons/react/24/outline"
+import UpgradeButton from "@/components/UpgradeButton"
 
 const page = () => {
     return (
@@ -66,12 +67,7 @@ const page = () => {
                         </div>
 
                         {/* Upgrade button */}
-                        <button
-                            type="button"
-                            className="w-full bg-[#4F46E5] hover:bg-[#6159ED] text-white font-semibold text-xs md:text-sm py-3 px-4 rounded-lg shadow-sm cursor-pointer transition text-center"
-                        >
-                            Upgrade to Pro
-                        </button>
+                        <UpgradeButton/>
 
                         {/* List */}
                         <ul className="space-y-4 pt-2">
