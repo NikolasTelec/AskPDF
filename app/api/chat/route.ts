@@ -1,74 +1,112 @@
-import { NextResponse } from "next/server";
-
-interface ChatMessage {
-    id: string
-    role: "user" | "model"
-    content: string
-    created_at: string
-}
+import { NextResponse } from "next/server"
+import { createClient } from "@/utils/supabase/server"
+import { createAdminClient } from "@/utils/supabase/admin"
+import { getUserPlan } from "@/utils/getUserPlan"
+import { PLAN_LIMITS } from "@/utils/planLimits"
 
 export async function POST(req: Request) {
-    try {
-        const { fileUrl, message, history } = await req.json();
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-        if (!fileUrl || !message) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    try {
+        const { fileUrl, message, history, documentId } = await req.json()
+
+        if (!fileUrl || !message || !documentId) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
         }
 
-        // Get file from supabase storage
-        const response = await fetch(fileUrl);
-        const arrayBuffer = await response.arrayBuffer(); // converts pdf file to raw binary data
-        const base64Pdf = Buffer.from(arrayBuffer).toString("base64"); // converts binary data to Base64 (this text can AI read)
+        const plan = await getUserPlan(user.id)
+        const messageLimit = PLAN_LIMITS[plan].messagesPerDocument
+        const admin = createAdminClient()
 
-        // Format chat history for Gemini API
-        // Gemini wants: "user" and "model" specifically
-        const contents = history.map((msg: ChatMessage) => ({
+        // Limit check PŘED uložením zprávy
+        const { count, error: countError } = await admin
+            .from("messages")
+            .select("*", { count: "exact", head: true })
+            .eq("document_id", documentId)
+            .eq("role", "user")
+
+        if (countError) throw countError
+
+        if ((count ?? 0) >= messageLimit) {
+            return NextResponse.json(
+                { error: `Message limit reached. ${plan === "free" ? "Upgrade to Pro for up to 100 messages per document." : "You have reached the 100 message limit for this document."}` },
+                { status: 403 }
+            )
+        }
+
+        // Uloží user zprávu až po úspěšném limit checku
+        const { data: userMsg, error: userMsgErr } = await admin
+            .from("messages")
+            .insert({ document_id: documentId, role: "user", content: message })
+            .select()
+            .single()
+
+        if (userMsgErr) throw userMsgErr
+
+        // Gemini
+        const response = await fetch(fileUrl)
+        const arrayBuffer = await response.arrayBuffer()
+        const base64Pdf = Buffer.from(arrayBuffer).toString("base64")
+
+        const contents = history.map((msg: any) => ({
             role: msg.role === "user" ? "user" : "model",
-            parts: [{ text: msg.content }]          
-        }));
-        
+            parts: [{ text: msg.content }]
+        }))
+
         contents.push({
             role: "user",
             parts: [
-                {
-                    inlineData: {
-                        mimeType: "application/pdf",
-                        data: base64Pdf
-                    }
-                },
+                { inlineData: { mimeType: "application/pdf", data: base64Pdf } },
                 { text: message }
             ]
-        });
+        })
 
-        // Gemini API
-        const apiKey = process.env.GEMINI_API_KEY;
+        const apiKey = process.env.GEMINI_API_KEY
         if (!apiKey) {
-            return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+            return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 })
         }
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-        const geminiResponse = await fetch(geminiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents })
-        });
+        const geminiResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key=${apiKey}`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents })
+            }
+        )
 
-        const data = await geminiResponse.json();
+        const data = await geminiResponse.json()
 
-        // Error handling
         if (!geminiResponse.ok) {
-            console.error(JSON.stringify(data, null, 2));
-            return NextResponse.json({ answer: `Google API Error: ${data.error?.message || "Unknown error"}` });
+            console.error(JSON.stringify(data, null, 2))
+            return NextResponse.json(
+                { error: `Google API Error: ${data.error?.message || "Unknown error"}` },
+                { status: 500 }
+            )
         }
 
-        // Gemini answer
-        const aiAnswer = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't process the document.";
+        const aiAnswer = data.candidates?.[0]?.content?.parts?.[0]?.text
+            ?? "I'm sorry, I couldn't process the document."
 
-        // Returning answer to frontend
-        return NextResponse.json({ answer: aiAnswer });
+        // Uloží AI odpověď
+        const { data: aiMsg, error: aiMsgErr } = await admin
+            .from("messages")
+            .insert({ document_id: documentId, role: "model", content: aiAnswer })
+            .select()
+            .single()
+
+        if (aiMsgErr) throw aiMsgErr
+
+        // Vrátí obě zprávy klientovi
+        return NextResponse.json({ userMsg, aiMsg })
 
     } catch (error: any) {
-        console.error("Gemini API Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error("Chat API error:", error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
     }
 }

@@ -77,18 +77,20 @@ const page = () => {
     const executeDelete = async (docId: string) => {
         const toastId = toast.loading("Deleting document...");
         try {
-            const { error } = await supabase
-                .from("documents")
-                .delete()
-                .eq("id", docId);
-
-            if (error) throw error;
-
+            const res = await fetch("/api/documents/delete", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ documentId: docId }),
+            });
+            const result = await res.json();
+            if (!res.ok) {
+                throw new Error(result.error || "Failed to delete document");
+            }
             setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
             toast.success("Document deleted!", { id: toastId });
         } catch (error: any) {
             console.error(error.message);
-            toast.error("Failed to delete document!", { id: toastId });
+            toast.error(error.message || "Failed to delete document!", { id: toastId });
         }
     };
 

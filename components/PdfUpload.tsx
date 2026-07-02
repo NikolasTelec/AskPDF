@@ -72,22 +72,21 @@ const PdfUpload = () => {
                 .getPublicUrl(filePath);
 
             // 5. WRITE to table documents
-            const { data: dbData, error: dbError } = await supabase
-                .from("documents")
-                .insert({
-                    user_id: user.id,
-                    file_url: publicUrl
-                    // ID and created_at generate automatically in db
-                })
-                .select() // .select() gives me added row with new ID
-                .single();
+            const res = await fetch("/api/documents/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ file_url: publicUrl })
+            })
 
-            if (dbError) {
-                throw new Error(`Database error: ${dbError.message}`);
+            const result = await res.json()
+
+            if (!res.ok) {
+                // Pokud je 403, je to limit — ne obecná chyba
+                throw new Error(result.error || "Database error")
             }
 
-            toast.success("Document uploaded successfully!", { id: toastId });
-            router.push(`/documents/${dbData.id}`);
+            toast.success("Document uploaded successfully!", { id: toastId })
+            router.push(`/documents/${result.document.id}`)
 
         } catch (error: any) {
             console.error("Upload failed:", error.message);

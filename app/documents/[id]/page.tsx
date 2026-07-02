@@ -70,60 +70,39 @@ export default function DocumentPage() {
     }, [docId, supabase]);
 
     // Send message 
-    const handleSendMessage = async (e: SubmitEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!inputMessage.trim() || !documentData || isGenerating) return;
-
-        const userText = inputMessage;
-        setInputMessage("");
-
+    const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        if (!inputMessage.trim() || !documentData || isGenerating) return
+    
+        const userText = inputMessage
+        setInputMessage("")
+        setIsGenerating(true)
+    
         try {
-            // Save user message to supabase
-            const { data: userMsgData, error: userErr } = await supabase
-                .from("messages")
-                .insert([
-                    { document_id: docId, role: "user", content: userText }
-                ])
-                .select()
-                .single();
-
-            if (userErr) throw userErr;
-            setMessages((prev) => [...prev, userMsgData]);
-            setIsGenerating(true);
-
-            // Call API Route with Gemini
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     fileUrl: documentData.file_url,
                     message: userText,
-                    history: messages
+                    history: messages,
+                    documentId: docId
                 })
-            });
-
-            const chatData = await response.json();
-            if (!response.ok) throw new Error(chatData.error || "AI Generation failed");
-
-            // Save AI answer to supabase
-            const { data: aiMsgData, error: aiErr } = await supabase
-                .from("messages")
-                .insert([
-                    { document_id: docId, role: "model", content: chatData.answer }
-                ])
-                .select()
-                .single();
-
-            if (aiErr) throw aiErr;
-            setMessages((prev) => [...prev, aiMsgData]);
-
+            })
+    
+            const chatData = await response.json()
+            if (!response.ok) throw new Error(chatData.error || "AI Generation failed")
+    
+            // API route vrátí obě uložené zprávy, jen je přidáme do stavu
+            setMessages((prev) => [...prev, chatData.userMsg, chatData.aiMsg])
+    
         } catch (error: any) {
-            console.error(error);
-            toast.error(error.message || "Something went wrong.");
+            console.error(error)
+            toast.error(error.message || "Something went wrong.")
         } finally {
-            setIsGenerating(false);
+            setIsGenerating(false)
         }
-    };
+    }
 
     return (
         <div className="w-full h-[calc(100vh-72px)] bg-[#F8F7FF] flex flex-col md:flex-row overflow-hidden">
