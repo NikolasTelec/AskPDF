@@ -34,7 +34,7 @@ const Navbar = () => {
   }, [menuOpen]);
 
   return (
-    <div className="flex justify-between items-center bg-white h-18 border-b border-[#4F46E5]">
+    <div className="flex justify-between items-center bg-white h-18 ">
 
       {/* Logo */}
       <Image src="/askpdf.png" alt="logo" className="ml-5 md:ml-7 h-9 w-auto object-contain" width={240} height={80} priority />

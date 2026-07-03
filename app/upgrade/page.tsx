@@ -1,10 +1,25 @@
+"use client"
 
-import { CheckIcon } from "@heroicons/react/24/outline"
+import { CheckIcon, ArrowLeftIcon } from "@heroicons/react/24/outline"
 import UpgradeButton from "@/components/UpgradeButton"
+import { useRouter } from "next/navigation"
 
-const page = () => {
+const Page = () => {
+    const router = useRouter()
+
     return (
-        <div className="min-h-screen md:max-h-screen w-full bg-white flex flex-col items-center justify-center px-4 py-10 md:py-24">
+        <div className="relative min-h-screen md:max-h-screen w-full bg-white flex flex-col items-center justify-center px-4 py-10 md:py-24">
+
+            {/* Back Button */}
+            <button
+                type="button"
+                onClick={() => router.back()}
+                className="hidden md:flex absolute md:top-10 md:left-10 items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[#4F46E5] transition-all p-2 rounded-xl hover:bg-slate-50 cursor-pointer group"
+                title="Go back"
+            >
+                <ArrowLeftIcon className="h-5 w-5 text-slate-500 group-hover:text-[#4F46E5] transition stroke-[2.5]" />
+                <span>Back</span>
+            </button>
 
             {/* Header */}
             <div className="max-w-3xl text-center mb-7 md:mb-16 space-y-3">
@@ -67,7 +82,7 @@ const page = () => {
                         </div>
 
                         {/* Upgrade button */}
-                        <UpgradeButton/>
+                        <UpgradeButton />
 
                         {/* List */}
                         <ul className="space-y-4 pt-2">
@@ -100,9 +115,9 @@ const page = () => {
                 </div>
 
             </div>
-            
+
         </div>
     )
 }
 
-export default page
+export default Page
