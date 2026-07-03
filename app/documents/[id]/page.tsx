@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import dynamic from "next/dynamic";
 
 // Dynamic import, SSR turned off (fix ReferenceError: DOMMatrix is not defined)
-const PdfViewerPanel = dynamic(() => import("@/components/PdfViewer"), { 
+const PdfViewerPanel = dynamic(() => import("@/components/PdfViewer"), {
     ssr: false,
     loading: () => (
         <div className="w-full h-full flex items-center justify-center text-slate-400 animate-pulse">
@@ -27,7 +27,7 @@ export default function DocumentPage() {
     const [messages, setMessages] = useState<any[]>([]);
     const [inputMessage, setInputMessage] = useState("");
     const [isGenerating, setIsGenerating] = useState(false);
-    
+
     const chatEndRef = useRef<HTMLDivElement>(null);
 
     // Autoscroll to bottom in chat
@@ -47,7 +47,7 @@ export default function DocumentPage() {
                     .select("*")
                     .eq("id", docId)
                     .single();
-                
+
                 if (docErr) throw docErr;
                 setDocumentData(doc);
 
@@ -73,11 +73,19 @@ export default function DocumentPage() {
     const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!inputMessage.trim() || !documentData || isGenerating) return
-    
+
         const userText = inputMessage
         setInputMessage("")
         setIsGenerating(true)
-    
+
+        const tempUserMsg = {
+            id: `temp-${Date.now()}`,
+            role: "user",
+            content: userText,
+            created_at: new Date().toISOString()
+        }
+        setMessages((prev) => [...prev, tempUserMsg])
+
         try {
             const response = await fetch("/api/chat", {
                 method: "POST",
@@ -89,16 +97,38 @@ export default function DocumentPage() {
                     documentId: docId
                 })
             })
-    
+
             const chatData = await response.json()
+
+            if (response.status === 403) {
+                toast.warning(chatData.error || "You have reached your message limit.", {
+                    duration: 6000,
+                    action: {
+                        label: "Upgrade to Pro",
+                        onClick: () => {
+                            window.location.href = "/upgrade";
+                        },
+                    },
+                });
+
+                setInputMessage(userText);
+                setMessages((prev) => prev.filter((msg) => msg.id !== tempUserMsg.id));
+                return;
+            }
+
             if (!response.ok) throw new Error(chatData.error || "AI Generation failed")
-    
-            // API route vrátí obě uložené zprávy, jen je přidáme do stavu
-            setMessages((prev) => [...prev, chatData.userMsg, chatData.aiMsg])
-    
+
+            setMessages((prev) => [
+                ...prev.filter((msg) => msg.id !== tempUserMsg.id),
+                chatData.userMsg,
+                chatData.aiMsg
+            ])
+
         } catch (error: any) {
             console.error(error)
             toast.error(error.message || "Something went wrong.")
+            setInputMessage(userText);
+            setMessages((prev) => prev.filter((msg) => msg.id !== tempUserMsg.id))
         } finally {
             setIsGenerating(false)
         }
@@ -134,16 +164,15 @@ export default function DocumentPage() {
 
             {/* Right side (Chat Area) */}
             <div className={`${activeTab === "chat" ? "flex" : "hidden md:flex"} w-full md:w-1/2 h-full bg-[#F8F7FF] md:bg-[#EBE9FF]/50 flex-col min-h-0`}>
-                
+
                 {/* Chat area */}
                 <div className="grow px-7 pt-10 space-y-8 overflow-y-auto">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                            <div className={`max-w-[80%] text-sm px-5 py-3.5 rounded-lg shadow-sm ${
-                                msg.role === "user" 
-                                    ? "bg-[#4F46E5] text-white" 
+                            <div className={`max-w-[80%] text-sm px-5 py-3.5 rounded-lg shadow-sm ${msg.role === "user"
+                                    ? "bg-[#4F46E5] text-white"
                                     : "bg-white text-slate-900 border border-slate-100 leading-relaxed"
-                            }`}>
+                                }`}>
                                 <p className="whitespace-pre-wrap">{msg.content}</p>
                             </div>
                         </div>
