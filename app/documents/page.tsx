@@ -82,12 +82,30 @@ const page = () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ documentId: docId }),
             });
+
             const result = await res.json();
+
+            if (res.status === 403) {
+                toast.warning(result.error || "Deleting documents requires a Pro plan.", {
+                    id: toastId,
+                    duration: 6000,
+                    action: {
+                        label: "Upgrade to Pro",
+                        onClick: () => {
+                            window.location.href = "/upgrade";
+                        },
+                    },
+                });
+                return;
+            }
+
             if (!res.ok) {
                 throw new Error(result.error || "Failed to delete document");
             }
+
             setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
             toast.success("Document deleted!", { id: toastId });
+
         } catch (error: any) {
             console.error(error.message);
             toast.error(error.message || "Failed to delete document!", { id: toastId });
