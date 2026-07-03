@@ -18,14 +18,6 @@ const Navbar = () => {
       .then((data) => setIsPro(data.isPro === true))
       .catch(() => setIsPro(false))
   }, [])
-  const handleSubscriptionClick = async () => {
-    if (!isPro) return
-    const res = await fetch("/api/stripe/portal", { method: "POST" })
-    const data = await res.json()
-    if (res.ok && data.url) {
-      window.location.href = data.url
-    }
-  }
 
   // Unable scroll when menu open
   useEffect(() => {
@@ -69,7 +61,7 @@ const Navbar = () => {
         <Link
           href="/upgrade"
           className="hidden md:flex items-center justify-center text-[#4F46E5] text-sm font-semibold shadow-md border rounded-md border-[#4F46E5] px-4 py-2 cursor-pointer hover:bg-violet-50 transition">
-          {isPro ? "Manage subscription" : "Upgrade"}<Image src="/crown.png" alt="crown" className="w-5 h-5 ml-2" width={16} height={16} />
+          Upgrade <Image src="/crown.png" alt="crown" className="w-5 h-5 ml-2" width={16} height={16} />
         </Link>
 
         {/* Logout Button */}
