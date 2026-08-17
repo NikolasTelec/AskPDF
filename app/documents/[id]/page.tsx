@@ -135,7 +135,7 @@ export default function DocumentPage() {
     }
 
     return (
-        <div className="w-full h-[calc(100vh-72px)] bg-[#F8F7FF] flex flex-col md:flex-row overflow-hidden">
+        <div className="w-full h-[calc(100dvh-72px)] bg-[#F8F7FF] flex flex-col md:flex-row overflow-hidden">
 
             {/* Mobile buttons chat / pdf */}
             <div className="md:hidden w-full flex justify-center py-4 bg-[#F8F7FF] border-b border-slate-100 shrink-0">

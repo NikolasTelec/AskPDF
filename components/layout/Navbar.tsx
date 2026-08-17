@@ -84,7 +84,7 @@ const Navbar = () => {
 
       {/* Menu */}
       {menuOpen && (
-        <div className="md:hidden fixed top-18 left-0 z-50 w-full h-[calc(100vh-4.5rem)] bg-white flex flex-col gap-8 p-6">
+        <div className="md:hidden fixed top-18 left-0 z-50 w-full h-[calc(100dvh-4.5rem)] bg-white flex flex-col gap-8 p-6">
           <Link
             href="/documents"
             onClick={() => setMenuOpen(false)}

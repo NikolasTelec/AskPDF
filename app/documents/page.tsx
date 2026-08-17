@@ -126,7 +126,7 @@ const page = () => {
 
     return (
         <>
-            <div className="w-full min-h-[calc(100vh-72px)] bg-white px-6 py-10 md:px-12">
+            <div className="w-full min-h-[calc(100dvh-72px)] bg-white px-6 py-10 md:px-12">
                 <div className="max-w-7xl mx-auto">
 
                     {/* Grid */}
