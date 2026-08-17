@@ -23,7 +23,7 @@ export async function POST(req: Request) {
         const messageLimit = PLAN_LIMITS[plan].messagesPerDocument
         const admin = createAdminClient()
 
-        // Limit check PŘED uložením zprávy
+        // Limit check before saving the message
         const { count, error: countError } = await admin
             .from("messages")
             .select("*", { count: "exact", head: true })
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
             )
         }
 
-        // Uloží user zprávu až po úspěšném limit checku
+        // Saves the user message only after a successful limit check
         const { data: userMsg, error: userMsgErr } = await admin
             .from("messages")
             .insert({ document_id: documentId, role: "user", content: message })
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
         }
 
         const geminiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
         const aiAnswer = data.candidates?.[0]?.content?.parts?.[0]?.text
             ?? "I'm sorry, I couldn't process the document."
 
-        // Uloží AI odpověď
+        // Saves AI answer
         const { data: aiMsg, error: aiMsgErr } = await admin
             .from("messages")
             .insert({ document_id: documentId, role: "model", content: aiAnswer })
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
 
         if (aiMsgErr) throw aiMsgErr
 
-        // Vrátí obě zprávy klientovi
+        // Returns both messages to the client
         return NextResponse.json({ userMsg, aiMsg })
 
     } catch (error: any) {

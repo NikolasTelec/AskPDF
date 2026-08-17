@@ -30,7 +30,7 @@ export async function DELETE(req: Request) {
 
         const admin = createAdminClient()
 
-        // Ověří že dokument patří tomuto uživateli
+        // Verifies that the document belongs to this user
         const { data: doc, error: fetchError } = await admin
             .from("documents")
             .select("file_url")
@@ -42,13 +42,13 @@ export async function DELETE(req: Request) {
             return NextResponse.json({ error: "Document not found" }, { status: 404 })
         }
 
-        // Smaže soubor ze storage
+        // Delete file from storage
         const filePath = doc.file_url.split("/pdfs/")[1]
         if (filePath) {
             await admin.storage.from("pdfs").remove([decodeURIComponent(filePath)])
         }
 
-        // Smaže z DB — messages se smažou automaticky přes ON DELETE CASCADE
+        // Deletes from DB — messages are deleted automatically via ON DELETE CASCADE
         const { error: deleteError } = await admin
             .from("documents")
             .delete()

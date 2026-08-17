@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
 
 export async function POST(req: Request) {
-    // Stripe ověřuje podpis proti přesnému raw body — req.json() by ho znehodnotil
+    // Stripe verifies the signature against the exact raw body — req.json()
     const body = await req.text()
     const signature = req.headers.get("stripe-signature")
 

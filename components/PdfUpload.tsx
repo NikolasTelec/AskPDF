@@ -81,7 +81,6 @@ const PdfUpload = () => {
             const result = await res.json()
 
             if (!res.ok) {
-                // Pokud je 403, je to limit — ne obecná chyba
                 throw new Error(result.error || "Database error")
             }
 
@@ -95,7 +94,6 @@ const PdfUpload = () => {
             }
         } finally {
             setIsUploading(false);
-            // Input reset
             if (fileInputRef.current) fileInputRef.current.value = "";
         }
     };

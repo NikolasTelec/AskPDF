@@ -38,8 +38,8 @@ export default function Home() {
 
       {/* App images */}
       <div className="max-w-6xl mx-auto px-6 mb-6">
-        <Image src="/chat_image.png" alt="chat_image" className="hidden md:flex rounded-md shadow-[0_0_15px_#00000040]" width={1920} height={1080} loading="eager"/>
-        <Image src="/chat_image_m.png" alt="chat_image" className="w-full h-auto max-w-xs mx-auto md:hidden rounded-md shadow-[0_0_15px_#00000040]" width={1920} height={1080} loading="eager"/>
+        <Image src="/project_image.png" alt="chat_image" className="hidden md:flex rounded-md shadow-[0_0_15px_#00000040]" width={1920} height={1080} loading="eager"/>
+        <Image src="/project_image_m.png" alt="chat_image" className="w-full h-auto max-w-xs mx-auto md:hidden rounded-md shadow-[0_0_15px_#00000040]" width={1920} height={1080} loading="eager"/>
       </div>
 
       {/* Bullet points */}

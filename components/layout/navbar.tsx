@@ -10,14 +10,6 @@ import { handleLogout } from "../auth/Logout";
 const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState<boolean>(false)
-  const [isPro, setIsPro] = useState<boolean>(false)
-
-  useEffect(() => {
-    fetch("/api/user/plan")
-      .then((res) => res.json())
-      .then((data) => setIsPro(data.isPro === true))
-      .catch(() => setIsPro(false))
-  }, [])
 
   // Unable scroll when menu open
   useEffect(() => {

@@ -12,7 +12,7 @@ const PdfViewerPanel = dynamic(() => import("@/components/PdfViewer"), {
     ssr: false,
     loading: () => (
         <div className="w-full h-full flex items-center justify-center text-slate-400 animate-pulse">
-            Inicializuji prohlížeč PDF...
+            Loading PDF...
         </div>
     )
 });
@@ -35,7 +35,7 @@ export default function DocumentPage() {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isGenerating]);
 
-    // Načtení informací o dokumentu a historie chatu z DB
+    // Loading document details and chat history from DB
     useEffect(() => {
         if (!docId) return;
 
@@ -70,7 +70,7 @@ export default function DocumentPage() {
     }, [docId, supabase]);
 
     // Send message 
-    const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSendMessage = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!inputMessage.trim() || !documentData || isGenerating) return
 
