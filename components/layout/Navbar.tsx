@@ -1,10 +1,9 @@
 "use client"
 
-import { ArrowRightEndOnRectangleIcon, DocumentPlusIcon, DocumentTextIcon, Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowRightEndOnRectangleIcon, DocumentTextIcon, Bars3Icon, XMarkIcon, BoltIcon, DocumentIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { triggerFileUpload } from "../PdfUpload";
 import { handleLogout } from "../auth/Logout";
 
 const Navbar = () => {
@@ -26,42 +25,35 @@ const Navbar = () => {
   }, [menuOpen]);
 
   return (
-    <div className="flex justify-between items-center bg-white h-18 ">
+    <div className="flex justify-between items-center bg-white h-18 border-b">
 
       {/* Logo */}
       <Image src="/askpdf.png" alt="logo" className="ml-5 md:ml-7 h-9 w-auto object-contain" width={240} height={80} priority />
 
-      <div className="flex gap-7 mr-7">
+      <div className="hidden md:flex items-center gap-5 mr-7">
         {/* My Documents Button */}
-        <div className="hidden md:inline-flex overflow-hidden shadow-md rounded-md border border-[#4F46E5]">
-          <Link
-            href="/documents"
-            className="flex items-center gap-2 bg-[#4F46E5] px-4 py-2 text-sm font-semibold text-white transition-colors cursor-pointer hover:bg-[#6159ED]">
-            My Documents
-          </Link>
+        <Link
+          href="/documents"
+          className="flex items-center rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 cursor-pointer hover:bg-slate-100 hover:text-slate-900 transition">
+          My Documents
+        </Link>
 
-          {/* Add Document Button */}
-          <button
-            type="button"
-            onClick={triggerFileUpload}
-            className="flex w-12 items-center justify-center border-l-2 border-[#4F46E5] bg-white transition-colors cursor-pointer hover:bg-violet-50">
-            <DocumentPlusIcon className="w-6 h-6 text-[#4F46E5]" />
-          </button>
-        </div>
 
         {/* Upgrade Button */}
         <Link
           href="/upgrade"
-          className="hidden md:flex items-center justify-center text-[#4F46E5] text-sm font-semibold shadow-md border rounded-md border-[#4F46E5] px-4 py-2 cursor-pointer hover:bg-violet-50 transition">
-          Upgrade <Image src="/crown.png" alt="crown" className="w-5 h-5 ml-2" width={16} height={16} />
+          className="flex items-center px-4 py-2 text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition">
+          Upgrade <BoltIcon className="w-4 ml-1"/>
         </Link>
+
+        <div className="flex items-center h-6 w-px bg-slate-200 mx-1"></div>
 
         {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="hidden md:flex items-center justify-center px-2 -mx-2 rounded-md cursor-pointer hover:bg-violet-50"
+          className="hidden md:flex items-center justify-center p-2.5 -mx-2 rounded-xl cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
         >
-          <ArrowRightEndOnRectangleIcon className="w-7 h-7 text-[#4F46E5]" />
+          <ArrowRightEndOnRectangleIcon className="w-5"/>
         </button>
       </div>
 
@@ -91,19 +83,10 @@ const Navbar = () => {
             className="flex items-center gap-2 text-[#4F46E5] font-semibold text-left">
             My Documents <DocumentTextIcon className="w-6 h-6 ml-1 text-[#4F46E5]" />
           </Link>
-          <button
-            type="button"
-            onClick={() => {
-              triggerFileUpload();
-              setMenuOpen(false);
-            }}
-            className="flex items-center gap-2 text-[#4F46E5] font-semibold text-left">
-            Add Document <DocumentPlusIcon className="w-6 h-6 ml-1 text-[#4F46E5]" />
-          </button>
           <Link
             href="/upgrade"
             className="flex items-center gap-2 text-[#4F46E5] font-semibold text-left">
-            Upgrade <Image src="/crown.png" alt="crown" className="w-6 h-6 ml-1" width={16} height={16} />
+            Upgrade <BoltIcon className="w-6 ml-1"/>
           </Link>
           <button onClick={handleLogout} className="flex items-center gap-2 text-[#4F46E5] font-semibold text-left">
             Logout <ArrowRightEndOnRectangleIcon className="w-6 h-6 ml-1 text-[#4F46E5]" />
